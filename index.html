@@ -1,19 +1,159 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENGLISH MIND</title>
-    <link rel="stylesheet" href="web_app.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>English Materials — Telegram WebApp</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+  :root {
+    --bg-color: #ffffff;
+    --bg-block: #f2f2f2;
+    --text-color: #222;
+    --button-bg: #2563eb;
+    --button-text: #fff;
+  }
+
+  body {
+    font-family: system-ui;
+    margin: 0;
+    padding: 16px;
+    background: var(--bg-color);
+    color: var(--text-color);
+  }
+
+  h1 { font-size: 1.3rem; margin-bottom: 20px; }
+  h2 { margin-top: 25px; font-size:1.1rem; }
+
+  .block { margin-bottom: 25px; background: var(--bg-block); padding: 15px; border-radius: 10px; }
+
+  select {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  .card {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    background: var(--bg-color);
+    border: 1px solid rgba(0,0,0,0.1);
+    display: flex;
+    gap: 12px;
+  }
+
+  .card img { width: 90px; height: 130px; object-fit: cover; border-radius: 6px; }
+  .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+  .card p { margin: 6px 0; font-size: 0.95rem; }
+
+  .hint { font-size:0.9rem; color:#666; margin-top:10px; }
+</style>
 </head>
+
 <body>
-    <div>
-        <h1>ENGLISH MIND</h1>
-        <p>Hello my fried, welcome in my web app. This web app, create for learning english</p>
-    </div>
+<h1>📚 English Study Materials</h1>
+<div class="hint">Выберите материалы из каждого списка и нажмите "Подтвердить" внизу.</div>
 
-    
-    <script rel="web_app.js"></script>
+<!-- ===== 1. Учебники ===== -->
+<div class="block">
+  <h2>Учебники</h2>
+  <select id="books"><option value="">— выбрать —</option><option value="englishFile">English File</option><option value="solutions">Solutions</option><option value="headway">New Headway</option></select>
+  <div id="booksDetails"></div>
+</div>
+
+<!-- ===== 2. Журналы ===== -->
+<div class="block">
+  <h2>Журналы</h2>
+  <select id="mag"><option value="">— выбрать —</option><option value="lhe">Learn Hot English</option><option value="speakOut">Speak Out</option></select>
+  <div id="magDetails"></div>
+</div>
+
+<!-- ===== 3. Словари ===== -->
+<div class="block">
+  <h2>Словари</h2>
+  <select id="dict"><option value="">— выбрать —</option><option value="oxfordDict">Oxford Dictionary</option><option value="cambridgeDict">Cambridge Dictionary</option><option value="longmanDict">Longman Dictionary</option></select>
+  <div id="dictDetails"></div>
+</div>
+
+<!-- ===== 4. Грамматика ===== -->
+<div class="block">
+  <h2>Грамматика</h2>
+  <select id="gram"><option value="">— выбрать —</option><option value="murphy">Murphy Grammar</option><option value="peu">Practical English Usage</option><option value="oxfordGrammar">Oxford Grammar Course</option></select>
+  <div id="gramDetails"></div>
+</div>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<script>
+// Данные каталога
+const DATA = {
+  englishFile:{title:"English File", desc:"Учебник Oxford.", img:"https://via.placeholder.com/300x450?text=English+File"},
+  solutions:{title:"Solutions", desc:"Популярная Oxford серия.", img:"https://via.placeholder.com/300x450?text=Solutions"},
+  headway:{title:"Headway", desc:"Классика обучения.", img:"https://via.placeholder.com/300x450?text=Headway"},
+
+  lhe:{title:"Learn Hot English", desc:"Журнал разговорного английского.", img:"https://via.placeholder.com/300x450?text=LHE"},
+  speakOut:{title:"Speak Out", desc:"Журнал для практики.", img:"https://via.placeholder.com/300x450?text=Speak+Out"},
+
+  oxfordDict:{title:"Oxford Dictionary", desc:"Лучший словарь для учащихся.", img:"https://via.placeholder.com/300x450?text=Oxford"},
+  cambridgeDict:{title:"Cambridge Dictionary", desc:"Бесплатный словарь.", img:"https://via.placeholder.com/300x450?text=Cambridge"},
+  longmanDict:{title:"Longman Dictionary", desc:"Современный словарь.", img:"https://via.placeholder.com/300x450?text=Longman"},
+
+  murphy:{title:"Murphy Grammar", desc:"Популярный учебник грамматики.", img:"https://via.placeholder.com/300x450?text=Murphy"},
+  peu:{title:"Practical English Usage", desc:"Справочник по употреблению.", img:"https://via.placeholder.com/300x450?text=PEU"},
+  oxfordGrammar:{title:"Oxford Grammar", desc:"Грамматика от Oxford.", img:"https://via.placeholder.com/300x450?text=Oxford+Grammar"}
+};
+
+// Для хранения выбранных значений
+const selections = {books:"", mag:"", dict:"", gram:""};
+
+// Функция рендера карточки
+function showCard(selectId, blockId){
+  const sel = document.getElementById(selectId);
+  const block = document.getElementById(blockId);
+  const val = sel.value;
+  selections[selectId] = val;
+  if(!val){ block.innerHTML=""; return; }
+  const it = DATA[val];
+  block.innerHTML = `<div class="card"><img src="${it.img}"><div class="meta"><h3>${it.title}</h3><p>${it.desc}</p></div></div>`;
+}
+
+// Привязываем списки
+["books","mag","dict","gram"].forEach(id=>{
+  const blockId = id+"Details";
+  document.getElementById(id).onchange = ()=>showCard(id, blockId);
+});
+
+// --- Telegram WebApp ---
+const tg = Telegram.WebApp;
+tg.expand();
+
+// Настройка цвета темы
+const theme = tg.colorScheme; // "light" или "dark"
+if(theme==="dark"){
+  document.documentElement.style.setProperty("--bg-color","#1e1e1e");
+  document.documentElement.style.setProperty("--bg-block","#2a2a2a");
+  document.documentElement.style.setProperty("--text-color","#fff");
+  document.documentElement.style.setProperty("--button-bg","#0a84ff");
+  document.documentElement.style.setProperty("--button-text","#fff");
+}
+
+// Главная кнопка Telegram
+tg.MainButton.text = "Подтвердить";
+tg.MainButton.color = getComputedStyle(document.documentElement).getPropertyValue("--button-bg");
+tg.MainButton.textColor = getComputedStyle(document.documentElement).getPropertyValue("--button-text");
+tg.MainButton.show();
+
+// Обработка клика по MainButton
+tg.MainButton.onClick(()=>{
+  tg.sendData(JSON.stringify(selections));
+  tg.MainButton.hide();
+  alert("Данные отправлены боту:\n"+JSON.stringify(selections,null,2));
+});
+</script>
+
 </body>
-
 </html>
