@@ -7,132 +7,202 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-  :root {
-    --bg-color: #ffffff;
-    --bg-block: #f2f2f2;
-    --text-color: #222;
-    --button-bg: #2563eb;
-    --button-text: #fff;
-  }
+:root{
+  --bg-color:#ffffff;
+  --bg-block:#f2f2f2;
+  --text-color:#222;
+  --button-bg:#2563eb;
+  --button-text:#fff;
+}
 
-  body {
-    font-family: system-ui;
-    margin: 0;
-    padding: 16px;
-    background: var(--bg-color);
-    color: var(--text-color);
-  }
+body{
+  font-family: system-ui;
+  margin:0;
+  padding:16px;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
 
-  h1 { font-size: 1.3rem; margin-bottom: 20px; }
-  h2 { margin-top: 25px; font-size:1.1rem; }
+h1{ font-size:1.3rem; margin-bottom:20px; }
+h2{ margin-top:25px; font-size:1.1rem; }
 
-  .block { margin-bottom: 25px; background: var(--bg-block); padding: 15px; border-radius: 10px; }
+.block{
+  margin-bottom:25px;
+  background: var(--bg-block);
+  padding:15px;
+  border-radius:10px;
+}
 
-  select {
-    width: 100%;
-    padding: 10px;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
+select{
+  width:100%;
+  padding:10px;
+  font-size:1rem;
+  border-radius:6px;
+  border:1px solid #ccc;
+  margin-bottom:10px;
+}
 
-  .card {
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 10px;
-    background: var(--bg-color);
-    border: 1px solid rgba(0,0,0,0.1);
-    display: flex;
-    gap: 12px;
-  }
+.card{
+  margin-top:15px;
+  padding:12px;
+  border-radius:10px;
+  background: var(--bg-color);
+  border:1px solid rgba(0,0,0,0.1);
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
 
-  .card img { width: 90px; height: 130px; object-fit: cover; border-radius: 6px; }
-  .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
-  .card p { margin: 6px 0; font-size: 0.95rem; }
+.card img{ width:90px; height:130px; object-fit:cover; border-radius:6px; }
+.card h3{ margin:0 0 8px; font-size:1.05rem; }
+.card p{ margin:6px 0; font-size:0.95rem; }
 
-  .hint { font-size:0.9rem; color:#666; margin-top:10px; }
+.download-btn{
+  margin-top:10px;
+  padding:8px 12px;
+  font-size:1rem;
+  background:var(--button-bg);
+  color:var(--button-text);
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  display:none;
+}
+
+.hint{ font-size:0.9rem; color:#666; margin-bottom:12px; }
 </style>
 </head>
 
 <body>
+
 <h1>📚 English Study Materials</h1>
-<div class="hint">Выберите материалы из каждого списка и нажмите "Подтвердить" внизу.</div>
+<div class="hint">Выберите серию и уровень/конкретную книгу. Нажмите "Скачать" или подтвердите выбор кнопкой Telegram внизу.</div>
 
-<!-- ===== 1. Учебники ===== -->
-<div class="block">
-  <h2>Учебники</h2>
-  <select id="books"><option value="">— выбрать —</option><option value="englishFile">English File</option><option value="solutions">Solutions</option><option value="headway">New Headway</option></select>
-  <div id="booksDetails"></div>
-</div>
-
-<!-- ===== 2. Журналы ===== -->
-<div class="block">
-  <h2>Журналы</h2>
-  <select id="mag"><option value="">— выбрать —</option><option value="lhe">Learn Hot English</option><option value="speakOut">Speak Out</option></select>
-  <div id="magDetails"></div>
-</div>
-
-<!-- ===== 3. Словари ===== -->
-<div class="block">
-  <h2>Словари</h2>
-  <select id="dict"><option value="">— выбрать —</option><option value="oxfordDict">Oxford Dictionary</option><option value="cambridgeDict">Cambridge Dictionary</option><option value="longmanDict">Longman Dictionary</option></select>
-  <div id="dictDetails"></div>
-</div>
-
-<!-- ===== 4. Грамматика ===== -->
-<div class="block">
-  <h2>Грамматика</h2>
-  <select id="gram"><option value="">— выбрать —</option><option value="murphy">Murphy Grammar</option><option value="peu">Practical English Usage</option><option value="oxfordGrammar">Oxford Grammar Course</option></select>
-  <div id="gramDetails"></div>
-</div>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<div id="app"></div>
 
 <script>
-// Данные каталога
+// --- Данные для всех категорий и уровней ---
 const DATA = {
-  englishFile:{title:"English File", desc:"Учебник Oxford.", img:"https://via.placeholder.com/300x450?text=English+File"},
-  solutions:{title:"Solutions", desc:"Популярная Oxford серия.", img:"https://via.placeholder.com/300x450?text=Solutions"},
-  headway:{title:"Headway", desc:"Классика обучения.", img:"https://via.placeholder.com/300x450?text=Headway"},
-
-  lhe:{title:"Learn Hot English", desc:"Журнал разговорного английского.", img:"https://via.placeholder.com/300x450?text=LHE"},
-  speakOut:{title:"Speak Out", desc:"Журнал для практики.", img:"https://via.placeholder.com/300x450?text=Speak+Out"},
-
-  oxfordDict:{title:"Oxford Dictionary", desc:"Лучший словарь для учащихся.", img:"https://via.placeholder.com/300x450?text=Oxford"},
-  cambridgeDict:{title:"Cambridge Dictionary", desc:"Бесплатный словарь.", img:"https://via.placeholder.com/300x450?text=Cambridge"},
-  longmanDict:{title:"Longman Dictionary", desc:"Современный словарь.", img:"https://via.placeholder.com/300x450?text=Longman"},
-
-  murphy:{title:"Murphy Grammar", desc:"Популярный учебник грамматики.", img:"https://via.placeholder.com/300x450?text=Murphy"},
-  peu:{title:"Practical English Usage", desc:"Справочник по употреблению.", img:"https://via.placeholder.com/300x450?text=PEU"},
-  oxfordGrammar:{title:"Oxford Grammar", desc:"Грамматика от Oxford.", img:"https://via.placeholder.com/300x450?text=Oxford+Grammar"}
+  books: {
+    "English File": {
+      levels: {
+        A1:{desc:"English File Beginner", file:"files/EF_A1.pdf", img:"EF+1.jpg"},
+        A2:{desc:"English File Elementary", file:"files/EF_A2.pdf", img:"EF+2.jpg"},
+        B1:{desc:"English File Intermediate", file:"files/EF_B1.pdf", img:"EF+3.jpg"}
+      }
+    },
+    "Solutions": {
+      levels: {
+        A1:{desc:"Solutions Beginner", file:"files/Sol_A1.pdf", img:"https://via.placeholder.com/300x450?text=Sol+A1"},
+        B1:{desc:"Solutions Intermediate", file:"files/Sol_B1.pdf", img:"https://via.placeholder.com/300x450?text=Sol+B1"}
+      }
+    }
+  },
+  magazines: {
+    "Learn Hot English": {
+      levels: {Issue1:{desc:"Журнал Learn Hot English #1", file:"files/LHE1.pdf", img:"https://via.placeholder.com/300x450?text=LHE1"}}
+    },
+    "Speak Out": {
+      levels: {Issue1:{desc:"Журнал Speak Out #1", file:"files/SO1.pdf", img:"https://via.placeholder.com/300x450?text=SO1"}}
+    }
+  },
+  dictionaries: {
+    "Oxford Dictionary": {
+      levels: {Full:{desc:"Oxford Learner's Dictionary", file:"files/OxfordDict.pdf", img:"https://via.placeholder.com/300x450?text=Oxford"}}
+    },
+    "Cambridge Dictionary": {
+      levels: {Full:{desc:"Cambridge Dictionary", file:"files/CambridgeDict.pdf", img:"https://via.placeholder.com/300x450?text=Cambridge"}}
+    }
+  },
+  grammar: {
+    "Murphy Grammar": {levels:{Full:{desc:"English Grammar in Use", file:"files/Murphy.pdf", img:"https://via.placeholder.com/300x450?text=Murphy"}}},
+    "Practical English Usage": {levels:{Full:{desc:"Practical English Usage Swan", file:"files/PEU.pdf", img:"https://via.placeholder.com/300x450?text=PEU"}}}
+  }
 };
 
-// Для хранения выбранных значений
-const selections = {books:"", mag:"", dict:"", gram:""};
+// --- Создаем категории ---
+const categories = Object.keys(DATA);
+const app = document.getElementById('app');
 
-// Функция рендера карточки
-function showCard(selectId, blockId){
-  const sel = document.getElementById(selectId);
-  const block = document.getElementById(blockId);
-  const val = sel.value;
-  selections[selectId] = val;
-  if(!val){ block.innerHTML=""; return; }
-  const it = DATA[val];
-  block.innerHTML = `<div class="card"><img src="${it.img}"><div class="meta"><h3>${it.title}</h3><p>${it.desc}</p></div></div>`;
-}
+// Для хранения выбранных материалов
+const selections = {};
 
-// Привязываем списки
-["books","mag","dict","gram"].forEach(id=>{
-  const blockId = id+"Details";
-  document.getElementById(id).onchange = ()=>showCard(id, blockId);
+categories.forEach(cat=>{
+  const block = document.createElement('div');
+  block.className='block';
+  block.innerHTML=`<h2>${cat.charAt(0).toUpperCase()+cat.slice(1)}</h2>
+    <select class="seriesSelect">
+      <option value="">— выбрать серию —</option>
+    </select>
+    <select class="levelSelect" style="display:none;"><option value="">— выбрать уровень —</option></select>
+    <div class="cardContainer"></div>
+    <button class="download-btn">Скачать</button>
+  `;
+  app.appendChild(block);
+
+  const seriesSelect = block.querySelector('.seriesSelect');
+  const levelSelect = block.querySelector('.levelSelect');
+  const cardContainer = block.querySelector('.cardContainer');
+  const downloadBtn = block.querySelector('.download-btn');
+
+  // заполняем серии
+  Object.keys(DATA[cat]).forEach(ser=>{
+    const opt = document.createElement('option');
+    opt.value = ser;
+    opt.textContent = ser;
+    seriesSelect.appendChild(opt);
+  });
+
+  let currentItem = null;
+
+  // выбор серии
+  seriesSelect.addEventListener('change', ()=>{
+    const key = seriesSelect.value;
+    levelSelect.innerHTML = '<option value="">— выбрать уровень —</option>';
+    cardContainer.innerHTML='';
+    downloadBtn.style.display='none';
+    if(!key){ levelSelect.style.display='none'; return; }
+
+    const levels = DATA[cat][key].levels;
+    Object.keys(levels).forEach(lvl=>{
+      const opt = document.createElement('option');
+      opt.value = lvl;
+      opt.textContent = lvl;
+      levelSelect.appendChild(opt);
+    });
+    levelSelect.style.display='block';
+  });
+
+  // выбор уровня
+  levelSelect.addEventListener('change', ()=>{
+    const seriesKey = seriesSelect.value;
+    const levelKey = levelSelect.value;
+    if(!levelKey){ cardContainer.innerHTML=''; downloadBtn.style.display='none'; return; }
+
+    currentItem = DATA[cat][seriesKey].levels[levelKey];
+    cardContainer.innerHTML=`<div class="card"><img src="${currentItem.img}"><div class="meta"><h3>${seriesKey} ${levelKey}</h3><p>${currentItem.desc}</p></div></div>`;
+    downloadBtn.style.display='inline-block';
+
+    // сохраняем в selections
+    selections[cat] = {series:seriesKey, level:levelKey, file:currentItem.file};
+  });
+
+  // кнопка скачать
+  downloadBtn.addEventListener('click', ()=>{
+    if(!currentItem) return;
+    const a = document.createElement('a');
+    a.href = currentItem.file;
+    a.download = currentItem.file.split('/').pop();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
 });
 
 // --- Telegram WebApp ---
 const tg = Telegram.WebApp;
 tg.expand();
-
-// Настройка цвета темы
-const theme = tg.colorScheme; // "light" или "dark"
+const theme = tg.colorScheme;
 if(theme==="dark"){
   document.documentElement.style.setProperty("--bg-color","#1e1e1e");
   document.documentElement.style.setProperty("--bg-block","#2a2a2a");
@@ -141,17 +211,15 @@ if(theme==="dark"){
   document.documentElement.style.setProperty("--button-text","#fff");
 }
 
-// Главная кнопка Telegram
-tg.MainButton.text = "Подтвердить";
+// --- MainButton для подтверждения выбора ---
+tg.MainButton.text = "Подтвердить выбор";
 tg.MainButton.color = getComputedStyle(document.documentElement).getPropertyValue("--button-bg");
 tg.MainButton.textColor = getComputedStyle(document.documentElement).getPropertyValue("--button-text");
 tg.MainButton.show();
 
-// Обработка клика по MainButton
 tg.MainButton.onClick(()=>{
   tg.sendData(JSON.stringify(selections));
-  tg.MainButton.hide();
-  alert("Данные отправлены боту:\n"+JSON.stringify(selections,null,2));
+  alert("Выбранные материалы отправлены боту:\n"+JSON.stringify(selections,null,2));
 });
 </script>
 
